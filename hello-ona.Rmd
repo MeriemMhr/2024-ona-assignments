@@ -1,0 +1,13 @@
+---
+title: "Hello ONA"
+author: "Meriem Mehri"
+date: "2024-03-19"
+output: pdf_document
+---
+
+```{r}
+library(tidyverse)
+library(igraph)
+
+
+
