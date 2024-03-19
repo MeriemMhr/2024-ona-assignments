@@ -1,0 +1,73 @@
+# Install necessary packages
+install.packages(c("tidyverse", "igraph", "tidygraph", "ggraph", "ggthemes", "qualpalr", "viridis"))
+
+# Load the libraries
+library(tidygraph)
+library(tidyverse)
+library(igraph)
+library(ggplot2)
+library(scales)
+library(ggraph)
+library(ggrepel)
+library(ggforce)
+library(ggthemes)
+library(patchwork)
+library(qualpalr)
+library(viridis)
+
+# Load LinkedIn data
+Connections <- read.csv("C:/Users/mehri/Downloads/Connections.csv")
+
+# Overview of the data
+head(Connections)
+
+# Prepare data by removing unnecessary column and cleaning
+Connections <- Connections %>%
+  select(-'Email.Address') %>%
+  mutate(label = str_c(First.Name, str_sub(Last.Name, 1, 1), as.character(row_number()))) %>%
+  select(label, Company) %>%
+  filter(!is.na(Company) & Company != "")
+
+# Count contacts by company, filter for those with more than 5 connections
+companies_with_more_than_5 <- Connections %>%
+  group_by(Company) %>%
+  count(sort = TRUE) %>%
+  filter(n > 5)
+
+# Visualize companies with more than 5 contacts
+ggplot(companies_with_more_than_5, aes(x = reorder(Company, n), y = n, fill = Company)) +
+  geom_bar(stat = "identity", width=0.8) +
+  coord_flip() +
+  theme_minimal() +
+  scale_fill_viridis_d() +
+  theme(legend.position = "none") +
+  labs(x = "Count of Contacts", y = "Company", title = "Companies with More Than 5 Contacts")
+
+# Prepare dataframe for graph
+df_connections <- Connections %>%
+  filter(Company %in% companies_with_more_than_5$Company) %>%
+  group_by(Company) %>%
+  summarise(label_combinations = list(combn(label, 2, simplify = FALSE))) %>%
+  unnest(label_combinations) %>%
+  transmute(from = map_chr(label_combinations, 1), to = map_chr(label_combinations, 2), company = Company)
+
+# Set seed for reproducibility and sample 30% of connections for the graph
+set.seed(180)
+graph_data <- df_connections %>%
+  slice_sample(prop = 0.30) %>%
+  as_tbl_graph(directed = FALSE)
+
+# Generate color palette
+color_palette <- qualpal(n = length(unique(df_connections$company)), colorspace = "pretty")
+
+# Create graph layout and visualize
+graph_layout <- ggraph(graph_data, layout = 'fr') +
+  geom_edge_link(aes(edge_color = company), show.legend = TRUE) +
+  scale_edge_color_manual(values = color_palette$hex) +
+  geom_node_point(size = 4) +
+  geom_node_text(aes(label = name), repel = TRUE, size = 2) +
+  theme_void() +
+  labs(title = "LinkedIn Connections Network", subtitle = "Edges are colored based on the organization")
+
+# Save graph to file
+ggsave("Linkedin_Connections_Networks_Graph.jpg", graph_layout, width = 20, height = 15, dpi = 300)
