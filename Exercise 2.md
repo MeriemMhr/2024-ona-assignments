@@ -48,27 +48,19 @@ their importance within the network.
 Next, we visualize the network plot with the calculated centrality
 measures.
 
-    ## Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family not found in Windows font database
+# Plot the network
+network_plot <- ggraph(centrality_measures, layout = 'stress') +
+  geom_edge_link(edge_width = 1, color = 'gray') +
+  geom_node_point(aes(color = color), size = 8) +
+  geom_node_text(aes(label = name), repel = TRUE, fontface = "bold", color = "black") +
+  theme_graph() +
+  labs(title = "Bus Seating Arrangement and Centrality Measures",
+       subtitle = "Highlighting Seats A, B, C, D") +
+  scale_color_manual(values = c('red', 'blue'), labels = c("Chosen Seats", "Other Seats")) +
+  guides(color = guide_legend(title = "Seat Type")) +
+  theme(legend.position = "bottom", legend.title = element_text(size = 10), legend.text = element_text(size = 8))
 
-    ## Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family not found in Windows font database
-
-    ## Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
-
-    ## Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family not found in Windows font database
-
-    ## Warning in grid.Call(C_stringMetric, as.graphicsAnnot(x$label)): font family not found in Windows font database
-
-    ## Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
-
-    ## Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
-
-    ## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
-
-    ## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
-
-    ## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
-
-    ## Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y, : font family not found in Windows font database
+network_plot
 
 <img src="Exercise-2_files/figure-markdown_strict/network-plot-1.png" alt="Network plot showing the centrality measures for the seating arrangement on the Fakebook bus."  />
 <p class="caption">
